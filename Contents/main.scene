@@ -1,0 +1,52 @@
+<root>
+    <actors>
+        <actor>
+            <name>Droid</name>
+            <id>1</id>
+            <parent>0</parent>
+            <components>
+                <component>
+                    <type>Transform</type>
+                    <data>
+                        <position>
+                            <x>1.0</x>
+                            <y>1.0</y>
+                            <z>1.0</z>
+                        </position>
+                        <rotation>
+                            <x>0.0</x>
+                            <y>0.0</y>
+                            <z>0.0</z>
+                            <w>1.0</w>
+                        </rotation>
+                        <scale>
+                            <x>0.1</x>
+                            <y>0.1</y>
+                            <z>0.1</z>
+                        </scale>
+                    </data> 
+                </component>
+                <component>
+                    <type>Model Renderer</type>
+                    <data>
+                        <path>Contents/droid/droid.fbx</path>
+                    </data> 
+                </component>
+                <component>
+                    <type>Material Renderer</type>
+                    <data>
+                        <materials>
+                            <material>Contents/droid/droid.mat</material>
+                        </materials>
+                    </data> 
+                </component>
+            </components>
+            <behaviours>
+                <behaviour>
+                    <type>test</type>
+                    <data></data>
+                </behaviour>
+            </behaviours>
+        </actor>
+    </actors>
+</root>
