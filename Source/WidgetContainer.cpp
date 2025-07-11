@@ -1,6 +1,11 @@
 #include "WidgetContainer.h"
 #include <algorithm>
 
+WidgetContainer::~WidgetContainer()
+{
+	RemoveAllWidgets();
+}
+
 void WidgetContainer::RemoveWidget(Widget::AWidget& widget)
 {
 	auto found = std::find_if(m_widgets.begin(), m_widgets.end(), [&widget](std::pair<Widget::AWidget*, EMemoryMode>& p_pair)

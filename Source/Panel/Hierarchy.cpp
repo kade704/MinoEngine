@@ -5,10 +5,10 @@
 #include "../DDSource.h"
 #include "../DDTarget.h"
 
-class HierarchyContextualMenu : public ContextualMenu
+class ActorContextualMenu : public ContextualMenu
 {
 public:
-	HierarchyContextualMenu(Actor* p_target, Widget::TreeNode& p_treeNode, bool p_panelMenu = false) :
+	ActorContextualMenu(Actor* p_target, Widget::TreeNode* p_treeNode, bool p_panelMenu = false) :
 		m_target(p_target),
 		m_treeNode(p_treeNode)
 	{
@@ -35,7 +35,7 @@ public:
 
 private:
 	Actor* m_target;
-	Widget::TreeNode& m_treeNode;
+	Widget::TreeNode* m_treeNode;
 };
 
 Panel::Hierarchy::Hierarchy(const std::string& p_title) :
@@ -52,12 +52,14 @@ Panel::Hierarchy::Hierarchy(const std::string& p_title) :
 
 		p_element.first->DetachFromParent();
 	};
-	m_sceneRoot->AddPlugin<HierarchyContextualMenu>(nullptr, *m_sceneRoot);
+	m_sceneRoot->AddPlugin<ActorContextualMenu>(nullptr, m_sceneRoot);
 
 	Actor::CreatedEvent += std::bind(&Hierarchy::AddActorByInstance, this, std::placeholders::_1);
 	Actor::DestroyedEvent += std::bind(&Hierarchy::DeleteActorByInstance, this, std::placeholders::_1);
 	Actor::AttachedEvent += std::bind(&Hierarchy::AttachActorToParent, this, std::placeholders::_1);
 	Actor::DetachedEvent += std::bind(&Hierarchy::DetachFromParent, this, std::placeholders::_1);
+	EDITOR_EVENT(ActorSelectedEvent) += std::bind(&Hierarchy::SelectActorByInstance, this, std::placeholders::_1);
+	EDITOR_EVENT(ActorUnselectedEvent) += std::bind(&Hierarchy::UnselectActorsWidgets, this);
 }
 
 void Panel::Hierarchy::UnselectActorsWidgets()
@@ -78,6 +80,14 @@ void Panel::Hierarchy::SelectActorByWidget(Widget::TreeNode& p_widget)
 	UnselectActorsWidgets();
 
 	p_widget.selected = true;
+
+	if (p_widget.HasParent())
+	{
+		if (auto parent = dynamic_cast<Widget::TreeNode*>(p_widget.GetParent()); parent)
+		{
+			ExpandTreeNode(*parent);
+		}
+	}
 }
 
 void Panel::Hierarchy::AttachActorToParent(Actor& p_actor)
@@ -93,9 +103,11 @@ void Panel::Hierarchy::AttachActorToParent(Actor& p_actor)
 
 		if (p_actor.HasParent())
 		{
-			auto parentWidget = m_widgetActorLink.at(p_actor.GetParent());
-			parentWidget->leaf = false;
-			parentWidget->ConsiderWidget(*widget);
+			if (auto parentWidget = m_widgetActorLink.find(p_actor.GetParent()); parentWidget != m_widgetActorLink.end()) 
+			{
+				parentWidget->second->leaf = false;
+				parentWidget->second->ConsiderWidget(*widget);
+			}
 		}
 	}
 }
@@ -138,7 +150,7 @@ void Panel::Hierarchy::AddActorByInstance(Actor& p_actor)
 {
 	auto& textSelectable = m_sceneRoot->CreateWidget<Widget::TreeNode>(p_actor.GetName(), true);
 	textSelectable.leaf = true;
-	textSelectable.AddPlugin<HierarchyContextualMenu>(&p_actor, textSelectable);
+	textSelectable.AddPlugin<ActorContextualMenu>(&p_actor, &textSelectable);
 	textSelectable.AddPlugin<DDSource<std::pair<Actor*, Widget::TreeNode*>>>("Actor", "Attach to...", std::make_pair(&p_actor, &textSelectable));
 	textSelectable.AddPlugin<DDTarget<std::pair<Actor*, Widget::TreeNode*>>>("Actor").DataReceivedEvent += [&p_actor, &textSelectable](std::pair<Actor*, Widget::TreeNode*> p_element)
 	{
@@ -159,3 +171,16 @@ void Panel::Hierarchy::AddActorByInstance(Actor& p_actor)
 
 	textSelectable.ClickedEvent += EDITOR_BIND(SelectActor, std::ref(p_actor));
 }
+
+void Panel::Hierarchy::ExpandTreeNode(Widget::TreeNode& p_toExpand)
+{
+	p_toExpand.Open();
+	if (p_toExpand.HasParent())
+	{
+		if (auto parent = dynamic_cast<Widget::TreeNode*>(p_toExpand.GetParent()); parent)
+		{
+			ExpandTreeNode(*parent);
+		}
+	}
+}
+		

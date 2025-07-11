@@ -96,12 +96,9 @@ void Editor::UpdateEditMode(float p_deltaTime)
 
 void Editor::UpdateEditorPanels(float p_deltaTime)
 {
-	auto* profiler = m_panelManager.GetPanelAs<Panel::Profiler>("Profiler");
-
-	if (!profiler)
-		return;
+	auto& profiler = m_panelManager.GetPanelAs<Panel::Profiler>("Profiler");
 	
-		profiler->Update(p_deltaTime);
+	profiler.Update(p_deltaTime);
 }
 
 void Editor::PrepareRendering(float p_deltaTime)
@@ -110,13 +107,10 @@ void Editor::PrepareRendering(float p_deltaTime)
 
 void Editor::RenderViews(float p_deltaTime)
 {
-	auto* sceneView = m_panelManager.GetPanelAs<Panel::SceneView>("Scene View");
+	auto& sceneView = m_panelManager.GetPanelAs<Panel::SceneView>("Scene View");
 
-	if (!sceneView)
-		return;
-	
-	sceneView->Update(p_deltaTime);
-	sceneView->Render();
+	sceneView.Update(p_deltaTime);
+	sceneView.Render();
 }
 
 void Editor::RenderEditorUI(float p_deltaTime)

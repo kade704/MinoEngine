@@ -37,7 +37,7 @@ namespace Widget
 		bool lineBreak = true;
 
 	protected:
-		WidgetContainer* m_parent;
+		WidgetContainer* m_parent = nullptr;
 		std::string m_widgetID = "?";
 		bool m_autoExecutePlugins = true;
 

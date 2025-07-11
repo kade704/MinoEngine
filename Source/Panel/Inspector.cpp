@@ -14,6 +14,8 @@
 #include "../Component/CDirectionalLight.h"
 #include "../Component/CPointLight.h"
 #include "../Component/CSpotLight.h"
+#include "../Component/CModelRenderer.h"
+#include "../Component/CTransform.h"
 
 Panel::Inspector::Inspector(const std::string& p_title) :
     PanelWindow(p_title)
@@ -52,6 +54,8 @@ Panel::Inspector::Inspector(const std::string& p_title) :
         }
 
         componentSelectorWidget.ValueChangedEvent.Invoke(componentSelectorWidget.currentChoice);
+        componentSelectorWidget.currentChoice = 0;
+        Refresh();
     };
 
     componentSelectorWidget.ValueChangedEvent += [this, &addComponentButton](int p_value)
@@ -101,16 +105,20 @@ void Panel::Inspector::FocusActor(Actor& p_target)
 
     CreateActorInspector(p_target);
 
-    //EDITOR_EVENT(ActorSelectedEvent).Invoke(*m_targetActor);
+    EDITOR_EVENT(ActorSelectedEvent).Invoke(*m_targetActor);
 }
 
 void Panel::Inspector::Unfocus()
 {
-    if (m_targetActor)
+    if (!m_targetActor)
     {
-        m_targetActor->ComponentAddedEvent -= m_componentAddedListener;
-        m_targetActor->ComponentRemovedEvent -= m_componentRemovedListener;
+        return;
     }
+
+    m_targetActor->ComponentAddedEvent -= m_componentAddedListener;
+    m_targetActor->ComponentRemovedEvent -= m_componentRemovedListener;
+
+    EDITOR_EVENT(ActorUnselectedEvent).Invoke(*m_targetActor);
 
     SoftUnfocus();
 }

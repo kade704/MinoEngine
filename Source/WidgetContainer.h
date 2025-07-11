@@ -12,6 +12,9 @@ enum class EMemoryMode
 class WidgetContainer
 {
 public:
+	WidgetContainer() = default;
+	virtual ~WidgetContainer();
+
 	void RemoveWidget(Widget::AWidget& widget);
 	void RemoveAllWidgets();
 

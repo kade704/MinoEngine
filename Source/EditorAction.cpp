@@ -30,44 +30,22 @@ PanelManager& EditorAction::GetPanelManager()
 
 void EditorAction::SelectActor(Actor& p_target)
 {
-    auto* inspector = EDITOR_PANEL(Inspector, "Inspector");
-    if (inspector)
-    {
-        inspector->FocusActor(p_target);
-    }
+    EDITOR_PANEL(Panel::Inspector, "Inspector").FocusActor(p_target);
 }
 
 void EditorAction::UnselectActor()
 {
-    auto* inspector = EDITOR_PANEL(Inspector, "Inspector");
-    if (inspector)
-    {
-        inspector->Unfocus();
-    }
+    EDITOR_PANEL(Panel::Inspector, "Inspector").Unfocus();
 }
 
 bool EditorAction::IsAnyActorSelected() const
 {
-    auto* inspector = EDITOR_PANEL(Inspector, "Inspector");
-    if (inspector)
-    {
-        return inspector->GetTargetActor() != nullptr;
-    }
-    return false;
+    return EDITOR_PANEL(Panel::Inspector, "Inspector").GetTargetActor() != nullptr;
 }
 
 Actor& EditorAction::GetSelectedActor() const
 {
-    auto* inspector = EDITOR_PANEL(Inspector, "Inspector");
-    if (inspector)
-    {
-        Actor* targetActor = inspector->GetTargetActor();
-        if (targetActor)
-        {
-            return *targetActor;
-        }
-    }
-    throw std::runtime_error("No actor is currently selected.");
+    return *EDITOR_PANEL(Panel::Inspector, "Inspector").GetTargetActor();
 }
 
 Actor& EditorAction::CreateActor(Actor* p_parent, const std::string& p_name)
@@ -106,11 +84,7 @@ void EditorAction::StartPlaying()
     {
         m_context.scriptInterpreter->RefreshAll();
 
-        auto* inspector = m_panelManager.GetPanelAs<Panel::Inspector>("Inspector");
-        if (inspector)
-        {
-            inspector->Unfocus();
-        }
+        EDITOR_PANEL(Panel::Inspector, "Inspector").Refresh();
 
         if (m_context.scriptInterpreter->IsOk())
         {
@@ -134,7 +108,6 @@ void EditorAction::StopPlaying()
     if (m_editorMode != EEditorMode::EDIT)
     {
         SetEditorMode(EEditorMode::EDIT);
-
     }
 }
 
@@ -145,12 +118,7 @@ void EditorAction::NextFrame()
 void EditorAction::RefreshScripts()
 {
     m_context.scriptInterpreter->RefreshAll();
-
-    auto* inspector = m_panelManager.GetPanelAs<Panel::Inspector>("Inspector");
-    if (inspector)
-    {
-        inspector->Refresh();
-    }
+    m_panelManager.GetPanelAs<Panel::Inspector>("Inspector").Refresh();
 
     if (m_context.scriptInterpreter->IsOk())
         MINO_LOG("Scripts interpretation succeeded!");

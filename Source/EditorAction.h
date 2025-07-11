@@ -10,7 +10,7 @@
 #define EDITOR_EVENT(target)				ServiceLocator::Get<EditorAction>().target
 #define EDITOR_CONTEXT(instance)			ServiceLocator::Get<EditorAction>().GetContext().instance
 #define EDITOR_RENDERER()					ServiceLocator::Get<EditorAction>().GetRenderer()
-#define EDITOR_PANEL(type, id)				ServiceLocator::Get<EditorAction>().GetPanelManager().GetPanelAs<Panel::type>(id)
+#define EDITOR_PANEL(type, id)				ServiceLocator::Get<EditorAction>().GetPanelManager().GetPanelAs<type>(id)
 
 class EditorAction
 {
@@ -57,5 +57,9 @@ private:
 	EditorRenderer& m_renderer;
 	EEditorMode m_editorMode = EEditorMode::EDIT;
 	std::vector<std::pair<uint32_t, std::function<void()>>> m_delayedActions;
+
+public:
+	Event<Actor&> ActorSelectedEvent;
+	Event<Actor&> ActorUnselectedEvent;
 };
 

@@ -30,9 +30,9 @@ public:
 	}
 
 	template<typename T>
-	T* GetPanelAs(const std::string& p_id)
+	T& GetPanelAs(const std::string& p_id)
 	{
-		return static_cast<T*>(m_panels[p_id].get());
+		return *static_cast<T*>(m_panels[p_id].get());
 	}
 
 private:

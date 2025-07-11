@@ -25,6 +25,8 @@ namespace Panel
 		void DeleteActorByInstance(Actor& p_actor);
 		void AddActorByInstance(Actor& p_actor);
 
+		void ExpandTreeNode(Widget::TreeNode& p_toExpand);
+
 	public:
 		Event<Actor&> ActorSelectedEvent;
 		Event<Actor&> ActorDeselectedEvent;
