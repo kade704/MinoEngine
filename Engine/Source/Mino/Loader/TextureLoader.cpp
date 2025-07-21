@@ -5,42 +5,70 @@
 
 #include "TextureLoader.h"
 
-Texture* TextureLoader::Create(const std::string& path)
+Texture* TextureLoader::Create(const std::string& p_filepath, ETextureFilteringMode p_firstFilter, ETextureFilteringMode p_secondFilter, bool p_generateMipmap)
 {
-    unsigned int textureID;
-    glGenTextures(1, &textureID);
-
-    stbi_set_flip_vertically_on_load(true);
-
+    GLuint textureID;
     int textureWidth;
     int textureHeight;
     int bitsPerPixel;
-    unsigned char* bufferData = stbi_load(path.c_str(), &textureWidth, &textureHeight, &bitsPerPixel, 4);
+    glGenTextures(1, &textureID);
 
-    if (!bufferData)
+    stbi_set_flip_vertically_on_load(true);
+    unsigned char* dataBuffer = stbi_load(p_filepath.c_str(), &textureWidth, &textureHeight, &bitsPerPixel, 4);
+
+    if (dataBuffer)
     {
-        stbi_image_free(bufferData);
+        glBindTexture(GL_TEXTURE_2D, textureID);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, dataBuffer);
+
+        if (p_generateMipmap)
+        {
+            glGenerateMipmap(GL_TEXTURE_2D);
+        }
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, static_cast<GLint>(p_firstFilter));
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, static_cast<GLint>(p_secondFilter));
+
+        stbi_image_free(dataBuffer);
         glBindTexture(GL_TEXTURE_2D, 0);
 
+        return new Texture(p_filepath, textureID, textureWidth, textureHeight, bitsPerPixel, p_firstFilter, p_secondFilter, p_generateMipmap);
+    }
+    else
+    {
+        stbi_image_free(dataBuffer);
+        glBindTexture(GL_TEXTURE_2D, 0);
         return nullptr;
     }
+}
 
+Texture* TextureLoader::CreateColor(uint32_t p_data, ETextureFilteringMode p_firstFilter, ETextureFilteringMode p_secondFilter, bool p_generateMipmap)
+{
+    GLuint textureID;
+    glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_2D, textureID);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, bufferData);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &p_data);
+
+    if (p_generateMipmap)
+    {
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, static_cast<GLint>(p_firstFilter));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, static_cast<GLint>(p_secondFilter));
 
-    stbi_image_free(bufferData);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    return new Texture(path, textureID);
+    return new Texture("", textureID, 1, 1, 32, p_firstFilter, p_secondFilter, p_generateMipmap);
 }
 
-Texture* TextureLoader::CreateFromMemory(uint8_t* p_data, uint32_t p_width, uint32_t p_height)
+Texture* TextureLoader::CreateFromMemory(uint8_t* p_data, uint32_t p_width, uint32_t p_height, ETextureFilteringMode p_firstFilter, ETextureFilteringMode p_secondFilter, bool p_generateMipmap)
 {
     GLuint textureID;
     glGenTextures(1, &textureID);
@@ -48,14 +76,19 @@ Texture* TextureLoader::CreateFromMemory(uint8_t* p_data, uint32_t p_width, uint
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, p_width, p_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, p_data);
 
+    if (p_generateMipmap)
+    {
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, static_cast<GLint>(p_firstFilter));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, static_cast<GLint>(p_secondFilter));
 
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    return new Texture("", textureID);
+    return new Texture("", textureID, 1, 1, 32, p_firstFilter, p_secondFilter, p_generateMipmap);
 }
 
 bool TextureLoader::Destroy(Texture*& p_textureInstance)

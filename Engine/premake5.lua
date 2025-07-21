@@ -16,6 +16,7 @@ project "Engine"
         "%{IncludeDir.sol2}",
         "%{IncludeDir.imgui}",
         "%{IncludeDir.assimp}",
+        "%{IncludeDir.tinyxml2}",
     }
     
     links {
@@ -24,4 +25,5 @@ project "Engine"
         "lua",
         "imgui",
         "assimp",
+        "tinyxml2",
     }

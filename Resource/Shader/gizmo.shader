@@ -11,6 +11,7 @@ layout (std140) uniform EngineUBO
     mat4    ubo_View;
     mat4    ubo_Projection;
     vec3    ubo_ViewPos;
+    float   ubo_Time;
 };
 
 out VS_OUT
@@ -18,9 +19,9 @@ out VS_OUT
     vec3 Color;
 } vs_out;
 
+uniform bool u_IsBall;
 uniform bool u_IsPickable;
 uniform int u_HighlightedAxis;
-uniform float u_Scale = 1.0f;
 
 mat4 rotationMatrix(vec3 axis, float angle)
 {
@@ -51,7 +52,7 @@ void main()
 
 	vec3 pos = geo_Pos;
 
-    vec3 fragPos = vec3(instanceModel * vec4(pos * distanceToCamera * u_Scale, 1.0));
+    vec3 fragPos = vec3(instanceModel * vec4(pos * distanceToCamera * 0.1f, 1.0));
 
 	if (u_IsPickable)
 	{
@@ -70,7 +71,13 @@ void main()
 	}
 	else
 	{
-		float red	= float(gl_InstanceID == 1); // X
+		if (u_IsBall)
+		{
+			vs_out.Color = vec3(1.0f);
+		}
+		else
+		{
+			float red	= float(gl_InstanceID == 1); // X
 			float green = float(gl_InstanceID == 2); // Y
 			float blue	= float(gl_InstanceID == 0); // Z
 
@@ -82,6 +89,7 @@ void main()
 			{
 				vs_out.Color = vec3(red, green, blue);
 			}
+		}
 	}
 
     gl_Position = ubo_Projection * ubo_View * vec4(fragPos, 1.0);
@@ -96,6 +104,8 @@ in VS_OUT
 {
     vec3 Color;
 } fs_in;
+
+uniform bool u_IsPickable;
 
 void main()
 {

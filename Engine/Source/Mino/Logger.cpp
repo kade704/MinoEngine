@@ -1,7 +1,7 @@
 #include "Logger.h"
-#include <iostream>
-#include <Date.h>
+#include "Date.h"
 
+#include <iostream>
 
 Event<const Logger::LogData&> Logger::LogEvent;
 

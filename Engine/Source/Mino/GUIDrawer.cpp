@@ -44,6 +44,14 @@ void GUIDrawer::DrawString(WidgetContainer& p_root, const std::string& p_name, s
 	dispatcher.RegisterReference(p_data);
 }
 
+void GUIDrawer::DrawColor(WidgetContainer& p_root, const std::string& p_name, Color& p_color, bool p_hasAlpha)
+{
+	CreateTitle(p_root, p_name);
+	auto& widget = p_root.CreateWidget<Widget::ColorEdit>(p_hasAlpha);
+	auto& dispatcher = widget.AddPlugin<DataDispatcher<Color>>();
+	dispatcher.RegisterReference(p_color);
+}
+
 void GUIDrawer::DrawVec2(WidgetContainer& p_root, const std::string& p_name, std::function<FVector2(void)> p_gatherer, std::function<void(FVector2)> p_provider, float p_step, float p_min, float p_max)
 {
 	CreateTitle(p_root, p_name);
@@ -110,10 +118,13 @@ void GUIDrawer::DrawMesh(WidgetContainer& p_root, const std::string& p_name, Mod
 	};
 }
 
-void GUIDrawer::DrawColor(WidgetContainer& p_root, const std::string& p_name, Color& p_color, bool p_hasAlpha)
+void GUIDrawer::DrawColor(WidgetContainer& p_root, const std::string& p_name, std::function<Color(void)> p_gatherer, std::function<void(Color)> p_provider, bool p_hasAlpha)
 {
 	CreateTitle(p_root, p_name);
 	auto& widget = p_root.CreateWidget<Widget::ColorEdit>(p_hasAlpha);
 	auto& dispatcher = widget.AddPlugin<DataDispatcher<Color>>();
-	dispatcher.RegisterReference(p_color);
+	dispatcher.RegisterGatherer(p_gatherer);
+	dispatcher.RegisterProvider(p_provider);
 }
+
+

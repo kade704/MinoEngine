@@ -6,6 +6,7 @@
 #include "Component/CDirectionalLight.h"
 #include "Component/CPointLight.h"
 #include "Component/CSpotLight.h"
+#include "Component/CCamera.h"
 #include <algorithm>
 
 Event<Actor&> Actor::DestroyedEvent;
@@ -254,6 +255,13 @@ void Actor::OnDeserialize(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_act
             else if (componentType == Component::CDirectionalLight::GetNameStatic()) component = &AddComponent<Component::CDirectionalLight>();
             else if (componentType == Component::CPointLight::GetNameStatic()) component = &AddComponent<Component::CPointLight>();
             else if (componentType == Component::CSpotLight::GetNameStatic()) component = &AddComponent<Component::CSpotLight>();
+            else if (componentType == Component::CCamera::GetNameStatic()) component = &AddComponent<Component::CCamera>();
+            else
+            {
+                MINO_ERROR("Unknown component type: " + componentType);
+                currentComponent = currentComponent->NextSiblingElement("component");
+                continue;
+            }
             if (component)
                 component->OnDeserialize(p_doc, currentComponent->FirstChildElement("data"));
 

@@ -49,5 +49,5 @@ public:
 	std::vector<UniformInfo> uniforms;
 
 private:
-	std::unordered_map<std::string, int> mUniformLocationCache;
+	std::unordered_map<std::string, int> m_uniformLocationCache;
 };

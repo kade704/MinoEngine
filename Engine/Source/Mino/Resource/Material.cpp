@@ -4,54 +4,6 @@
 #include "../Logger.h"
 #include "../Buffer/UniformBuffer.h"
 
-void Material::OnDeserialize(tinyxml2::XMLDocument& doc, tinyxml2::XMLNode* node)
-{
-	Shader* deserializedShader = Serializer::DeserializeShader(doc, node, "shader");
-	SetShader(deserializedShader);
-
-	tinyxml2::XMLNode* uniformsNode = node->FirstChildElement("uniforms");
-	if (!uniformsNode) return;
-	
-	tinyxml2::XMLNode* uniformNode = uniformsNode->FirstChildElement("uniform");
-	while (uniformNode)
-	{
-		std::string uniformName = Serializer::DeserializeString(doc, uniformNode, "name");
-			 
-		UniformInfo* uniformInfo = deserializedShader->GetUniformInfo(uniformName);
-
-		switch (uniformInfo->type)
-		{
-		case UniformType::UNIFORM_INT:
-			m_uniformsData[uniformName] = Serializer::DeserializeInt64(doc, uniformNode, "value");
-			break;
-		case UniformType::UNIFORM_FLOAT:
-			m_uniformsData[uniformName] = Serializer::DeserializeFloat(doc, uniformNode, "value");
-			break;
-		case UniformType::UNIFORM_VEC2:
-			m_uniformsData[uniformName] = Serializer::DeserializeVec2(doc, uniformNode, "value");
-			break;
-		case UniformType::UNIFORM_VEC3:
-			m_uniformsData[uniformName] = Serializer::DeserializeVec3(doc, uniformNode, "value");
-			break;
-		case UniformType::UNIFORM_VEC4:
-			m_uniformsData[uniformName] = Serializer::DeserializeVec4(doc, uniformNode, "value");
-			break;
-		case UniformType::UNIFORM_MAT4:
-			m_uniformsData[uniformName] = Serializer::DeserializeMat4(doc, uniformNode, "value");
-			break;
-
-		case UniformType::UNIFORM_SAMPLER_2D:
-			m_uniformsData[uniformName] = Serializer::DeserializeTexture(doc, uniformNode, "value");
-			break;
-
-		default:
-			break;
-		}
-
-		uniformNode = uniformNode->NextSiblingElement("uniform");
-	}
-}
-
 Shader* Material::GetShader() const
 {
 	return m_shader;
@@ -81,7 +33,7 @@ const std::map<std::string, std::any>& Material::GetUniformsData() const
 	return m_uniformsData;
 }
 
-void Material::Bind()
+void Material::Bind(Texture* p_emptyTexture)
 {
 	if (!HasShader())
 	{
@@ -95,39 +47,34 @@ void Material::Bind()
 
 	for (auto& [name, value] : m_uniformsData)
 	{
-		UniformInfo* uniformInfo = m_shader->GetUniformInfo(name);
+		auto uniformData = m_shader->GetUniformInfo(name);
 
-		if (uniformInfo)
+		if (uniformData)
 		{
-			switch (uniformInfo->type)
+			switch (uniformData->type)
 			{
-			case UniformType::UNIFORM_INT:
-				m_shader->SetUniformInt(name, std::any_cast<int>(value));
-				break;
-			case UniformType::UNIFORM_FLOAT:
-				m_shader->SetUniformFloat(name, std::any_cast<float>(value));
-				break;
-			case UniformType::UNIFORM_VEC2:
-				m_shader->SetUniformVec2(name, std::any_cast<FVector2>(value));
-				break;
-			case UniformType::UNIFORM_VEC3:
-				m_shader->SetUniformVec3(name, std::any_cast<FVector3>(value));
-				break;
-			case UniformType::UNIFORM_VEC4:
-				m_shader->SetUniformVec4(name, std::any_cast<FVector4>(value));
-				break;
-			case UniformType::UNIFORM_MAT4:
-				m_shader->SetUniformMat4(name, std::any_cast<FMatrix4>(value));
-				break;
+			case UniformType::UNIFORM_BOOL:			if (value.type() == typeid(bool))		m_shader->SetUniformInt(name, std::any_cast<bool>(value));			break;
+			case UniformType::UNIFORM_INT:			if (value.type() == typeid(int))		m_shader->SetUniformInt(name, std::any_cast<int>(value));			break;
+			case UniformType::UNIFORM_FLOAT:		if (value.type() == typeid(float))		m_shader->SetUniformFloat(name, std::any_cast<float>(value));		break;
+			case UniformType::UNIFORM_FLOAT_VEC2:	if (value.type() == typeid(FVector2))	m_shader->SetUniformVec2(name, std::any_cast<FVector2>(value));		break;
+			case UniformType::UNIFORM_FLOAT_VEC3:	if (value.type() == typeid(FVector3))	m_shader->SetUniformVec3(name, std::any_cast<FVector3>(value));		break;
+			case UniformType::UNIFORM_FLOAT_VEC4:	if (value.type() == typeid(FVector4))	m_shader->SetUniformVec4(name, std::any_cast<FVector4>(value));		break;
 			case UniformType::UNIFORM_SAMPLER_2D:
-				Texture* tex = std::any_cast<Texture*>(value);
-				if (tex)
 				{
-					tex->Bind(textureSlot);
-					m_shader->SetUniformInt(name, std::any_cast<int>(textureSlot));
-					textureSlot++;
+					if (value.type() == typeid(Texture*))
+					{
+						if (auto tex = std::any_cast<Texture*>(value); tex)
+						{
+							tex->Bind(textureSlot);
+							m_shader->SetUniformInt(uniformData->name, textureSlot++);
+						}
+						else if (p_emptyTexture)
+						{
+							p_emptyTexture->Bind(textureSlot);
+							m_shader->SetUniformInt(uniformData->name, textureSlot++);
+						}
+					}
 				}
-				break;
 			}
 		}
 	}
@@ -190,4 +137,105 @@ uint8_t Material::GenerateStateMask() const
 int Material::GetGPUInstances() const
 {
 	return m_gpuInstances;
+}
+
+void Material::OnSerialize(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_node)
+{
+	Serializer::SerializeShader(p_doc, p_node, "shader", m_shader);
+
+	tinyxml2::XMLNode* uniformsNode = p_doc.NewElement("uniforms");
+	p_node->InsertEndChild(uniformsNode);
+
+	for (const auto& [uniformName, uniformValue] : m_uniformsData)
+	{
+		tinyxml2::XMLNode* uniform = p_doc.NewElement("uniform");
+		uniformsNode->InsertEndChild(uniform); 
+
+		const UniformInfo* uniformInfo = m_shader->GetUniformInfo(uniformName);
+
+		Serializer::SerializeString(p_doc, uniform, "name", uniformName);
+
+		if (uniformInfo && uniformValue.has_value())
+		{
+			switch (uniformInfo->type)
+			{
+			case UniformType::UNIFORM_BOOL:
+				if (uniformValue.type() == typeid(bool)) Serializer::SerializeInt(p_doc, uniform, "value", std::any_cast<bool>(uniformValue));
+				break;
+
+			case UniformType::UNIFORM_INT:
+				if (uniformValue.type() == typeid(int)) Serializer::SerializeInt(p_doc, uniform, "value", std::any_cast<int>(uniformValue));
+				break;
+
+			case UniformType::UNIFORM_FLOAT:
+				if (uniformValue.type() == typeid(float)) Serializer::SerializeFloat(p_doc, uniform, "value", std::any_cast<float>(uniformValue));
+				break;
+
+			case UniformType::UNIFORM_FLOAT_VEC2:
+				if (uniformValue.type() == typeid(FVector2)) Serializer::SerializeVec2(p_doc, uniform, "value", std::any_cast<FVector2>(uniformValue));
+				break;
+
+			case UniformType::UNIFORM_FLOAT_VEC3:
+				if (uniformValue.type() == typeid(FVector3)) Serializer::SerializeVec3(p_doc, uniform, "value", std::any_cast<FVector3>(uniformValue));
+				break;
+
+			case UniformType::UNIFORM_FLOAT_VEC4:
+				if (uniformValue.type() == typeid(FVector4)) Serializer::SerializeVec4(p_doc, uniform, "value", std::any_cast<FVector4>(uniformValue));
+				break;
+
+			case UniformType::UNIFORM_SAMPLER_2D:
+				if (uniformValue.type() == typeid(Texture*)) Serializer::SerializeTexture(p_doc, uniform, "value", std::any_cast<Texture*>(uniformValue));
+				break;
+			}
+		}
+	}
+}
+
+void Material::OnDeserialize(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_node)
+{
+	Shader* deserializedShader = Serializer::DeserializeShader(p_doc, p_node, "shader");
+	if (deserializedShader)
+	{
+		SetShader(deserializedShader);
+
+		tinyxml2::XMLNode* uniformsNode = p_node->FirstChildElement("uniforms");
+
+		if (uniformsNode)
+		{
+			for (auto uniform = uniformsNode->FirstChildElement("uniform"); uniform; uniform = uniform->NextSiblingElement("uniform"))
+			{
+				if (auto uniformNameElement = uniform->FirstChildElement("name"); uniformNameElement)
+				{
+					const std::string uniformName = uniformNameElement->GetText();
+
+					UniformInfo* uniformInfo = deserializedShader->GetUniformInfo(uniformName);
+
+					switch (uniformInfo->type)
+					{
+					case UniformType::UNIFORM_BOOL:
+						m_uniformsData[uniformInfo->name] = Serializer::DeserializeBoolean(p_doc, uniform, "value");
+						break;
+					case UniformType::UNIFORM_INT:
+						m_uniformsData[uniformName] = Serializer::DeserializeInt(p_doc, uniform, "value");
+						break;
+					case UniformType::UNIFORM_FLOAT:
+						m_uniformsData[uniformName] = Serializer::DeserializeFloat(p_doc, uniform, "value");
+						break;
+					case UniformType::UNIFORM_FLOAT_VEC2:
+						m_uniformsData[uniformName] = Serializer::DeserializeVec2(p_doc, uniform, "value");
+						break;
+					case UniformType::UNIFORM_FLOAT_VEC3:
+						m_uniformsData[uniformName] = Serializer::DeserializeVec3(p_doc, uniform, "value");
+						break;
+					case UniformType::UNIFORM_FLOAT_VEC4:
+						m_uniformsData[uniformName] = Serializer::DeserializeVec4(p_doc, uniform, "value");
+						break;
+					case UniformType::UNIFORM_SAMPLER_2D:
+						m_uniformsData[uniformName] = Serializer::DeserializeTexture(p_doc, uniform, "value");
+						break;
+					}
+				}
+			}
+		}
+	}
 }

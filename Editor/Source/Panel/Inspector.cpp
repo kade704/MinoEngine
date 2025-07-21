@@ -38,6 +38,7 @@ Panel::Inspector::Inspector(const std::string& p_title) :
     componentSelectorWidget.choices.emplace(2, "Directional Light");
     componentSelectorWidget.choices.emplace(3, "Point Light");
     componentSelectorWidget.choices.emplace(4, "Spot Light");
+    componentSelectorWidget.choices.emplace(5, "Camera");
 
     auto& addComponentButton = m_inspectorHeader->CreateWidget<Widget::Button>("Add Component", FVector2{ 100.f, 0 });
     addComponentButton.idleBackgroundColor = Color{ 0.7f, 0.5f, 0.f };
@@ -51,6 +52,7 @@ Panel::Inspector::Inspector(const std::string& p_title) :
         case 2: GetTargetActor()->AddComponent<Component::CDirectionalLight>(); break;
         case 3: GetTargetActor()->AddComponent<Component::CPointLight>(); break;
         case 4: GetTargetActor()->AddComponent<Component::CSpotLight>(); break;
+        case 5: GetTargetActor()->AddComponent<Component::CCamera>(); break;
         }
 
         componentSelectorWidget.ValueChangedEvent.Invoke(componentSelectorWidget.currentChoice);

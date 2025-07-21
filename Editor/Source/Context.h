@@ -12,6 +12,7 @@
 #include <Mino/UIManager.h>
 #include <Mino/Profiler.h>
 #include <Mino/ScriptInterpreter.h>
+#include <Mino/ShapeDrawer.h>
 #include <Mino/Buffer/UniformBuffer.h>
 #include <Mino/Buffer/ShaderStorageBuffer.h>
 #include <Mino/Manager/SceneManager.h>
@@ -32,6 +33,7 @@ public:
 	std::unique_ptr<InputManager> inputManager;
 	std::unique_ptr<Driver> driver;
 	std::unique_ptr<Renderer> renderer;
+	std::unique_ptr<ShapeDrawer> shapeDrawer;
 	std::unique_ptr<UIManager> uiManager;
 	std::unique_ptr<Analytics::Profiler> profiler;
 	std::unique_ptr<Buffer::UniformBuffer> engineUBO;

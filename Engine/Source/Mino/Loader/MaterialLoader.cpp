@@ -1,5 +1,6 @@
 #include "MaterialLoader.h"
-#include "../tinyxml2.h"
+
+#include <tinyxml2.h>
 
 Material* MaterialLoader::Create(const std::string& p_path)
 {

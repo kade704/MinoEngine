@@ -1,10 +1,10 @@
 #include "Camera.h"
 
 Camera::Camera() :
-	m_fov(90.0f),
+	m_fov(45.0f),
 	m_near(0.1f),
 	m_far(100.0f),
-	m_clearColor(0.1f, 0.1f, 0.1f)
+	m_clearColor(0.f, 0.f, 0.f)
 {
 }
 
@@ -26,6 +26,21 @@ void Camera::CacheProjectionMatrix(uint16_t windowWidth, uint16_t windowHeight)
 void Camera::CacheViewMatrix(const FVector3& position, const FQuaternion& rotation)
 {
 	m_viewMatrix = CalculateViewMatrix(position, rotation);
+}
+
+float Camera::GetFov() const
+{
+	return m_fov;
+}
+
+float Camera::GetNear() const
+{
+	return m_near;
+}
+
+float Camera::GetFar() const
+{
+	return m_far;
 }
 
 const FMatrix4& Camera::GetProjectionMatrix() const
@@ -58,6 +73,11 @@ void Camera::SetFar(float value)
 	m_far = value;
 }
 
+void Camera::SetClearColor(const FVector3 &color)
+{
+	m_clearColor = color;
+}
+
 FMatrix4 Camera::CalculateProjectionMatrix(uint16_t p_windowWidth, uint16_t p_windowHeight) const
 {
 	const auto ratio = p_windowWidth / static_cast<float>(p_windowHeight);
@@ -76,3 +96,4 @@ FMatrix4 Camera::CalculateViewMatrix(const FVector3& p_position, const FQuaterni
 		up.x, up.y, up.z																		// Up Vector
 	);
 }
+

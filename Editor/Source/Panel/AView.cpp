@@ -7,8 +7,8 @@ Panel::AView::AView(const std::string& p_title) :
 	PanelWindow(p_title),
 	m_editorRenderer(EDITOR_RENDERER())
 {
-	m_cameraPosition = FVector3(0, 0, 0);
-	m_cameraRotation = FQuaternion::Identity;
+	m_cameraPosition = { -10.0f, 3.0f, 10.0f };
+	m_cameraRotation = FQuaternion({ 0.0f, 135.0f, 0.0f });
 
 	m_image = &CreateWidget<Widget::Image>(m_fbo.GetTextureID(), FVector2(0.f, 0.f));
 }
@@ -31,6 +31,7 @@ void Panel::AView::Render()
 {
 	FillEngineUBO();
 	auto [winWidth, winHeight] = GetSafeSize();
+	EDITOR_CONTEXT(shapeDrawer)->SetViewProjection(m_camera.GetProjectionMatrix() * m_camera.GetViewMatrix());
 	EDITOR_CONTEXT(renderer)->SetViewport(0, 0, winWidth, winHeight);
 	_Render_Impl();
 }

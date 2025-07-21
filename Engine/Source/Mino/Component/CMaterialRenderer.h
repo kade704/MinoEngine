@@ -20,6 +20,7 @@ namespace Component
 		CMaterialRenderer(Actor& owner);
 		~CMaterialRenderer();
 
+		const FMatrix4& GetUserMatrix() const;
 		const MaterialList& GetMaterials() const;
 
 		virtual void OnSerialize(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_node) override;
@@ -35,5 +36,6 @@ namespace Component
 		MaterialList m_materials;
 		MaterialField m_materialFields;
 		std::array<std::string, MAX_MATERIAL_COUNT> m_materialNames;
+		FMatrix4 m_userMatrix;
 	};
 }

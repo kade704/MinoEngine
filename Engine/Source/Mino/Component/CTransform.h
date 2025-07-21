@@ -34,6 +34,14 @@ namespace Component
 
 		FTransform& GetFTransform();
 
+		FVector3 GetWorldForward() const;
+		FVector3 GetWorldUp() const;
+		FVector3 GetWorldRight() const;
+
+		FVector3 GetLocalForward() const;
+		FVector3 GetLocalUp() const;
+		FVector3 GetLocalRight() const;
+
 		virtual void OnSerialize(tinyxml2::XMLDocument& doc, tinyxml2::XMLNode* node) override;
 		virtual void OnDeserialize(tinyxml2::XMLDocument& doc, tinyxml2::XMLNode* node) override;
 

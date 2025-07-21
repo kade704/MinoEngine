@@ -7,6 +7,7 @@
 #include "Panel/Menubar.h"
 #include "Panel/Toolbar.h"
 #include "Panel/Console.h"
+#include "Panel/GameView.h"
 
 #include <Mino/ProfilerSpy.h>
 
@@ -33,6 +34,7 @@ void Editor::SetupUI()
 	m_panelManager.CreatePanel<Panel::AssetBrowser>("Asset Browser");
 	m_panelManager.CreatePanel<Panel::Toolbar>("Toolbar");
 	m_panelManager.CreatePanel<Panel::Console>("Console");
+	m_panelManager.CreatePanel<Panel::GameView>("Game View");
 
 	m_context.uiManager->SetCanvas(m_canvas);
 }
@@ -103,13 +105,18 @@ void Editor::UpdateEditorPanels(float p_deltaTime)
 
 void Editor::PrepareRendering(float p_deltaTime)
 {
+	m_context.engineUBO->SetSubData(m_context.device->GetElapsedTime(), 3 * sizeof(FMatrix4) + sizeof(FVector3));
 }
 
 void Editor::RenderViews(float p_deltaTime)
 {
 	auto& sceneView = m_panelManager.GetPanelAs<Panel::SceneView>("Scene View");
+	auto& gameView = m_panelManager.GetPanelAs<Panel::GameView>("Game View");
 
+	gameView.Update(p_deltaTime);
 	sceneView.Update(p_deltaTime);
+
+	gameView.Render();
 	sceneView.Render();
 }
 

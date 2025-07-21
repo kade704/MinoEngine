@@ -1,5 +1,5 @@
 <root>
-    <shader>Contents/editor/default.shader</shader>
+    <shader>Resource/Shader/default.shader</shader>
     <uniforms>
         <uniform>
             <name>u_DiffuseMap</name>

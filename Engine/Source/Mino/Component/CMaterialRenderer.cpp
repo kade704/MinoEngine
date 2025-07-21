@@ -33,6 +33,11 @@ const Component::CMaterialRenderer::MaterialList& Component::CMaterialRenderer::
     return m_materials;
 }
 
+const FMatrix4 &Component::CMaterialRenderer::GetUserMatrix() const
+{
+    return m_userMatrix;
+}
+
 void Component::CMaterialRenderer::OnSerialize(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_node)
 {
 	tinyxml2::XMLNode* materialsNode = p_doc.NewElement("materials");

@@ -3,10 +3,10 @@
 #include <optional>
 
 #include "AViewControllable.h"
+#include "../GizmoBehaviour.h"
 
 #include <Mino/Manager/SceneManager.h>
 #include <Mino/Buffer/FrameBuffer.h>
-#include <Mino/GizmoBehaviour.h>
 
 namespace Panel
 {

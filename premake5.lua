@@ -16,6 +16,7 @@ workspace "MinoEngine"
         sol2 = "%{wks.location}/ThirdParty/sol2/include",
         imgui = "%{wks.location}/ThirdParty/imgui",
         assimp = "%{wks.location}/ThirdParty/assimp/include",
+        tinyxml2 = "%{wks.location}/ThirdParty/tinyxml2",
     }
 
     filter "configurations:Debug"
@@ -32,6 +33,7 @@ workspace "MinoEngine"
         include "ThirdParty/lua"
         include "ThirdParty/imgui"
         include "ThirdParty/assimp"
+        include "ThirdParty/tinyxml2"
         include "ThirdParty/sol2"
         include "ThirdParty/stb"
 

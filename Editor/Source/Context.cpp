@@ -25,6 +25,8 @@ Context::Context()
 	driver = std::make_unique<Driver>();
 	renderer = std::make_unique<Renderer>();
 
+	shapeDrawer = std::make_unique<ShapeDrawer>(*renderer);
+
 	uiManager = std::make_unique<UIManager>(window->GetGlfwWindow());
 	profiler = std::make_unique<Analytics::Profiler>();
 

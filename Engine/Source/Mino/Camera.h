@@ -18,10 +18,14 @@ public:
 	const FMatrix4& GetProjectionMatrix() const;
 	const FMatrix4& GetViewMatrix() const;
 	const FVector3& GetClearColor() const;
+	float GetFov() const;
+	float GetNear() const;
+	float GetFar() const;
 
 	void SetFov(float value);
 	void SetNear(float value);
 	void SetFar(float value);
+	void SetClearColor(const FVector3& color);
 
 	FMatrix4 CalculateProjectionMatrix(uint16_t p_windowWidth, uint16_t p_windowHeight) const;
 	FMatrix4 CalculateViewMatrix(const FVector3& p_position, const FQuaternion& p_rotation) const;

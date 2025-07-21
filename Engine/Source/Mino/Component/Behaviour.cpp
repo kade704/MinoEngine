@@ -1,9 +1,7 @@
-#include <Component/Behaviour.h>
-#include <Actor.h>
-#include <Widget/TextColored.h>
-#include <Widget/ButtonImage.h>
-#include <EditorAction.h>
-#include <Panel/Inspector.h>
+#include "Behaviour.h"
+#include "../Actor.h"
+#include "../Widget/TextColored.h"
+#include "../Widget/ButtonImage.h"
 
 Event<Component::Behaviour*> Component::Behaviour::CreatedEvent;
 Event<Component::Behaviour*> Component::Behaviour::DestroyedEvent;

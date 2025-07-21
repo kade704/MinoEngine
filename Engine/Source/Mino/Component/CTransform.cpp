@@ -79,6 +79,36 @@ FTransform& Component::CTransform::GetFTransform()
     return m_transform;
 }
 
+FVector3 Component::CTransform::GetWorldForward() const
+{
+    return m_transform.GetWorldForward();
+}
+
+FVector3 Component::CTransform::GetWorldUp() const
+{
+    return m_transform.GetWorldUp();
+}
+
+FVector3 Component::CTransform::GetWorldRight() const
+{
+    return m_transform.GetWorldRight();
+}
+
+FVector3 Component::CTransform::GetLocalForward() const
+{
+    return m_transform.GetLocalForward();
+}
+
+FVector3 Component::CTransform::GetLocalUp() const
+{
+    return m_transform.GetLocalUp();
+}
+
+FVector3 Component::CTransform::GetLocalRight() const
+{
+    return m_transform.GetLocalRight();
+}
+
 void Component::CTransform::OnSerialize(tinyxml2::XMLDocument& doc, tinyxml2::XMLNode* node)
 {
     Serializer::SerializeVec3(doc, node, "position", GetLocalPosition());

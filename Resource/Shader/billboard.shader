@@ -11,6 +11,7 @@ layout (std140) uniform EngineUBO
     mat4    ubo_View;
     mat4    ubo_Projection;
     vec3    ubo_ViewPos;
+    float   ubo_Time;
 };
 
 out VS_OUT
@@ -59,8 +60,10 @@ in VS_OUT
 
 uniform vec4        u_Diffuse = vec4(1.0, 1.0, 1.0, 1.0);
 uniform sampler2D   u_DiffuseMap;
+uniform vec2        u_TextureTiling = vec2(1.0, 1.0);
+uniform vec2        u_TextureOffset = vec2(0.0, 0.0);
 
 void main()
 {
-    FRAGMENT_COLOR = texture(u_DiffuseMap, fs_in.TexCoords) * u_Diffuse;
+    FRAGMENT_COLOR = texture(u_DiffuseMap, u_TextureOffset + vec2(mod(fs_in.TexCoords.x * u_TextureTiling.x, 1), mod(fs_in.TexCoords.y * u_TextureTiling.y, 1))) * u_Diffuse;
 }

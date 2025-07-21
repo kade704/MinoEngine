@@ -1,6 +1,7 @@
 #include "SceneLoader.h"
-#include "../tinyxml2.h"
 #include "../Logger.h"
+
+#include <tinyxml2.h>
 
 Scene* SceneLoader::Create(const std::string& path)
 {

@@ -9,6 +9,10 @@ project "Editor"
         "Source/**.cpp","Source/**.h"
     }
 
+    postbuildcommands {
+        "xcopy \"%{wks.location}\\bin\\%{outputdir}\\Editor.exe\" \"%{wks.location}\" /y /i /c",
+    }
+
     includedirs {
         "%{wks.location}/Engine/Source",
 
@@ -16,6 +20,7 @@ project "Editor"
         "%{IncludeDir.lua}",
         "%{IncludeDir.sol2}",
         "%{IncludeDir.imgui}",
+        "%{IncludeDir.tinyxml2}",
     }
     
     links {

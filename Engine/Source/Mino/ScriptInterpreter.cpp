@@ -1,6 +1,6 @@
-#include <ScriptInterpreter.h>
-#include <Logger.h>
-#include <LuaBinder.h>
+#include "ScriptInterpreter.h"
+#include "Logger.h"
+#include "LuaBinder.h"
 
 ScriptInterpreter::ScriptInterpreter()
 {

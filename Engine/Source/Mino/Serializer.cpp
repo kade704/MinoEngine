@@ -5,83 +5,93 @@
 #include "Manager/ShaderManager.h"
 #include "ServiceLocator.h"
 
+void Serializer::SerializeBoolean(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_node, const std::string& p_name, bool p_value)
+{
+    tinyxml2::XMLElement* element = p_doc.NewElement(p_name.c_str());
+    element->SetText(p_value);
+    p_node->InsertEndChild(element);
+}
+
 void Serializer::SerializeString(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_node, const std::string& p_name, const std::string& p_value)
 {
-    auto element = p_doc.NewElement(p_name.c_str());
+    tinyxml2::XMLElement* element = p_doc.NewElement(p_name.c_str());
     element->SetText(p_value.c_str());
     p_node->InsertEndChild(element);
 }
 
 void Serializer::SerializeInt64(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_node, const std::string& p_name, int64_t p_value)
 {
-    auto element = p_doc.NewElement(p_name.c_str());
+    tinyxml2::XMLElement* element = p_doc.NewElement(p_name.c_str());
     element->SetText(p_value);
     p_node->InsertEndChild(element);
 }
 
 void Serializer::SerializeFloat(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_node, const std::string& p_name, float p_value)
 {
-    auto element = p_doc.NewElement(p_name.c_str());
+    tinyxml2::XMLElement* element = p_doc.NewElement(p_name.c_str());
+    element->SetText(p_value);
+    p_node->InsertEndChild(element);
+}
+
+void Serializer::SerializeInt(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_node, const std::string& p_name, int p_value)
+{
+    tinyxml2::XMLElement* element = p_doc.NewElement(p_name.c_str());
     element->SetText(p_value);
     p_node->InsertEndChild(element);
 }
 
 void Serializer::SerializeVec2(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_node, const std::string& p_name, const FVector2& p_value)
 {
-    auto element = p_doc.NewElement(p_name.c_str());
+    tinyxml2::XMLElement* element = p_doc.NewElement(p_name.c_str());
     p_node->InsertEndChild(element);
 
-    auto x = p_doc.NewElement("x");
+    tinyxml2::XMLElement* x = p_doc.NewElement("x");
     x->SetText(p_value.x);
     element->InsertEndChild(x);
 
-    auto y = p_doc.NewElement("y");
+    tinyxml2::XMLElement* y = p_doc.NewElement("y");
     y->SetText(p_value.y);
     element->InsertEndChild(y);
 }
 
 void Serializer::SerializeVec3(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_node, const std::string& p_name, const FVector3& p_value)
 {
-    auto element = p_doc.NewElement(p_name.c_str());
+    tinyxml2::XMLElement* element = p_doc.NewElement(p_name.c_str());
     p_node->InsertEndChild(element);
 
-    auto x = p_doc.NewElement("x");
+    tinyxml2::XMLElement* x = p_doc.NewElement("x");
     x->SetText(p_value.x);
     element->InsertEndChild(x);
 
-    auto y = p_doc.NewElement("y");
+    tinyxml2::XMLElement* y = p_doc.NewElement("y");
     y->SetText(p_value.y);
     element->InsertEndChild(y);
 
-    auto z = p_doc.NewElement("z");
+    tinyxml2::XMLElement* z = p_doc.NewElement("z");
     z->SetText(p_value.z);
     element->InsertEndChild(z);
 }
 
 void Serializer::SerializeVec4(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_node, const std::string& p_name, const FVector4& p_value)
 {
-    auto element = p_doc.NewElement(p_name.c_str());
+    tinyxml2::XMLElement* element = p_doc.NewElement(p_name.c_str());
     p_node->InsertEndChild(element);
 
-    auto x = p_doc.NewElement("x");
+    tinyxml2::XMLElement* x = p_doc.NewElement("x");
     x->SetText(p_value.x);
     element->InsertEndChild(x);
 
-    auto y = p_doc.NewElement("y");
+    tinyxml2::XMLElement* y = p_doc.NewElement("y");
     y->SetText(p_value.y);
     element->InsertEndChild(y);
 
-    auto z = p_doc.NewElement("z");
+    tinyxml2::XMLElement* z = p_doc.NewElement("z");
     z->SetText(p_value.z);
     element->InsertEndChild(z);
 
-    auto w = p_doc.NewElement("w");
+    tinyxml2::XMLElement* w = p_doc.NewElement("w");
     w->SetText(p_value.w);
     element->InsertEndChild(w);
-}
-
-void Serializer::SerializeMat4(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_node, const std::string& p_name, const FMatrix4& p_value)
-{
 }
 
 void Serializer::SerializeQuat(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_node, const std::string& p_name, const FQuaternion& p_value)
@@ -106,14 +116,30 @@ void Serializer::SerializeQuat(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* 
     element->InsertEndChild(w);
 }
 
-void Serializer::SerializeModel(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_node, const std::string& p_name, const Model* p_value)
+void Serializer::SerializeModel(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_node, const std::string& p_name, Model* p_value)
 {
     SerializeString(p_doc, p_node, p_name.c_str(), p_value ? p_value->path : "?");
 }
 
-void Serializer::SerializeMaterial(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_node, const std::string& p_name, const Material* p_value)
+void Serializer::SerializeTexture(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_node, const std::string& p_name, Texture* p_value)
 {
     SerializeString(p_doc, p_node, p_name.c_str(), p_value ? p_value->path : "?");
+}
+
+void Serializer::SerializeShader(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_node, const std::string& p_name, Shader* p_value)
+{
+    SerializeString(p_doc, p_node, p_name.c_str(), p_value ? p_value->path : "?");
+}
+
+void Serializer::SerializeMaterial(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_node, const std::string& p_name, Material* p_value)
+{
+    SerializeString(p_doc, p_node, p_name.c_str(), p_value ? p_value->path : "?");
+}
+
+void Serializer::DeserializeBoolean(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_node, const std::string& p_name, bool& p_out)
+{
+    if (auto element = p_node->FirstChildElement(p_name.c_str()); element)
+        element->QueryBoolText(&p_out);
 }
 
 void Serializer::DeserializeString(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_node, const std::string& p_name, std::string& p_out)
@@ -123,6 +149,12 @@ void Serializer::DeserializeString(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNo
         const char* result = element->GetText();
         p_out = result ? result : "";
     }
+}
+
+void Serializer::DeserializeInt(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_node, const std::string& p_name, int& p_out)
+{
+    if (auto element = p_node->FirstChildElement(p_name.c_str()); element)
+        element->QueryIntText(&p_out);
 }
 
 void Serializer::DeserializeInt64(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_node, const std::string& p_name, int64_t& p_out)
@@ -182,11 +214,6 @@ void Serializer::DeserializeVec4(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode
     }
 }
 
-void Serializer::DeserializeMat4(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_node, const std::string& p_name, FMatrix4& p_out)
-{
-    
-}
-
 void Serializer::DeserializeQuat(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_node, const std::string& p_name, FQuaternion& p_out)
 {
     if (auto child = p_node->FirstChildElement(p_name.c_str()); p_node)
@@ -229,10 +256,24 @@ void Serializer::DeserializeModel(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNod
         p_out = nullptr;
 }
 
+bool Serializer::DeserializeBoolean(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_node, const std::string& p_name)
+{
+    bool result;
+    DeserializeBoolean(p_doc, p_node, p_name, result);
+    return result;
+}
+
 std::string Serializer::DeserializeString(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_node, const std::string& p_name)
 {
     std::string result;
     DeserializeString(p_doc, p_node, p_name, result);
+    return result;
+}
+
+int Serializer::DeserializeInt(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_node, const std::string& p_name)
+{
+    int result;
+    DeserializeInt(p_doc, p_node, p_name, result);
     return result;
 }
 
@@ -268,13 +309,6 @@ FVector4 Serializer::DeserializeVec4(tinyxml2::XMLDocument& p_doc, tinyxml2::XML
 {
     FVector4 result;
     DeserializeVec4(p_doc, p_node, p_name, result);
-    return result;
-}
-
-FMatrix4 Serializer::DeserializeMat4(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_node, const std::string& p_name)
-{
-    FMatrix4 result;
-    DeserializeMat4(p_doc, p_node, p_name, result);
     return result;
 }
 

@@ -1,5 +1,5 @@
-#include <LuaActorBinder.h>
-#include <Actor.h>
+#include "LuaActorBinder.h"
+#include "Actor.h"
 
 void LuaActorBinder::BindActor(sol::state& p_luaState)
 {

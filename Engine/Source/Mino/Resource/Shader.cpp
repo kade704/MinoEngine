@@ -26,18 +26,7 @@ void Shader::Unbind() const
 	glUseProgram(0);
 }
 
-UniformInfo* Shader::GetUniformInfo(const std::string& name)
-{
-	auto found = std::find_if(uniforms.begin(), uniforms.end(), [&name](const UniformInfo& element)
-	{
-		return name == element.name;
-	});
 
-	if (found != uniforms.end())
-		return &*found;
-	else
-		return nullptr;
-}
 
 int Shader::GetUniformInt(const std::string& name)
 {
@@ -108,12 +97,27 @@ void Shader::SetUniformVec4(const std::string& name, const FVector4& p_vec4)
 
 void Shader::SetUniformMat4(const std::string& name, const FMatrix4& p_mat4)
 {
-	glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, &p_mat4.data[0]);
+	glUniformMatrix4fv(GetUniformLocation(name), 1, GL_TRUE, &p_mat4.data[0]);
 }
 
 bool Shader::IsEngineUBOMember(const std::string& p_uniformName)
 {
 	return p_uniformName.rfind("ubo_", 0) == 0;
+}
+
+unsigned int Shader::GetUniformLocation(const std::string& name)
+{
+	if (m_uniformLocationCache.find(name) != m_uniformLocationCache.end())
+		return m_uniformLocationCache.at(name);
+
+	const int location = glGetUniformLocation(id, name.c_str());
+
+	if (location == -1)
+		MINO_WARNING("Uniform: " + name + " doesn't exist ");
+
+	m_uniformLocationCache[name] = location;
+
+	return location;
 }
 
 void Shader::QueryUniforms()
@@ -136,11 +140,12 @@ void Shader::QueryUniforms()
 
 			switch (static_cast<UniformType>(type))
 			{
+			case UniformType::UNIFORM_BOOL:			defaultValue = std::make_any<bool>(GetUniformInt(name)); break;
 			case UniformType::UNIFORM_INT:			defaultValue = std::make_any<int>(GetUniformInt(name));	break;
 			case UniformType::UNIFORM_FLOAT:		defaultValue = std::make_any<float>(GetUniformFloat(name));	break;
-			case UniformType::UNIFORM_VEC2:	defaultValue = std::make_any<FVector2>(GetUniformVec2(name)); break;
-			case UniformType::UNIFORM_VEC3:	defaultValue = std::make_any<FVector3>(GetUniformVec3(name)); break;
-			case UniformType::UNIFORM_VEC4:	defaultValue = std::make_any<FVector4>(GetUniformVec4(name)); break;
+			case UniformType::UNIFORM_FLOAT_VEC2:	defaultValue = std::make_any<FVector2>(GetUniformVec2(name)); break;
+			case UniformType::UNIFORM_FLOAT_VEC3:	defaultValue = std::make_any<FVector3>(GetUniformVec3(name)); break;
+			case UniformType::UNIFORM_FLOAT_VEC4:	defaultValue = std::make_any<FVector4>(GetUniformVec4(name)); break;
 			case UniformType::UNIFORM_SAMPLER_2D:	defaultValue = std::make_any<Texture*>(nullptr); break;
 			}
 
@@ -155,21 +160,15 @@ void Shader::QueryUniforms()
 	}
 }
 
-unsigned int Shader::GetUniformLocation(const std::string& name)
+UniformInfo* Shader::GetUniformInfo(const std::string& name)
 {
-	if (mUniformLocationCache.find(name) != mUniformLocationCache.end())
-	{
-		return mUniformLocationCache.at(name);
-	}
+	auto found = std::find_if(uniforms.begin(), uniforms.end(), [&name](const UniformInfo& element)
+		{
+			return name == element.name;
+		});
 
-	int location = glGetUniformLocation(id, name.c_str());
-
-	if (location == -1)
-	{
-		MINO_WARNING("Uniform: " + name + " doesn't exist ");
-	}
-
-	mUniformLocationCache[name] = location;
-
-	return location;
+	if (found != uniforms.end())
+		return &*found;
+	else
+		return nullptr;
 }

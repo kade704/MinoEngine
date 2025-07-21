@@ -5,22 +5,10 @@
 #include <assimp/matrix4x4.h>
 #include <assimp/postprocess.h>
 
-bool AssimpParser::LoadModel(const std::string& p_fileName, std::vector<Mesh*>& p_meshes, std::vector<std::string>& p_materials)
+bool AssimpParser::LoadModel(const std::string& p_fileName, std::vector<Mesh*>& p_meshes, std::vector<std::string>& p_materials, EModelParserFlags p_parserFlags)
 {
 	Assimp::Importer import;
-	const aiScene* scene = import.ReadFile(p_fileName, 
-		aiProcess_Triangulate |
-		aiProcess_GenSmoothNormals | 
-		aiProcess_OptimizeMeshes | 
-		aiProcess_CalcTangentSpace | 
-		// aiProcess_JoinIdenticalVertices |
-		// aiProcess_Debone |
-		aiProcess_FindInvalidData |
-		// aiProcess_ImproveCacheLocality |
-		// aiProcess_GenUVCoords |
-		aiProcess_PreTransformVertices |
-		aiProcess_GlobalScale
-	);
+	const aiScene* scene = import.ReadFile(p_fileName, static_cast<uint32_t>(p_parserFlags));
 
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 		return false;

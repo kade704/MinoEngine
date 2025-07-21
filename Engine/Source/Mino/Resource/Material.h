@@ -1,18 +1,25 @@
 #pragma once
 
+#include "Shader.h"
+#include "../Logger.h"
+#include "../Serializable.h"
+#include "../Resource/Texture.h"
+
 #include <map>
 #include <any>
+#include <tinyxml2.h>
 
-#include "Shader.h"
-#include "../tinyxml2.h"
-#include "../Logger.h"
-
-class Material
+class Material : public Serializable
 {
 	friend class MaterialLoader;
 
 public:
-	void OnDeserialize(tinyxml2::XMLDocument& doc, tinyxml2::XMLNode* node);
+	void SetShader(Shader* shader);
+
+	void FillUniform();
+
+	void Bind(Texture* p_emptyTexture);
+	void Unbind();
 
 	template<typename T>
 	inline void Set(const std::string p_key, const T& p_value)
@@ -38,14 +45,9 @@ public:
 	}
 
 	Shader* GetShader() const;
-	void SetShader(Shader* shader);
 	bool HasShader() const;
+
 	const std::map<std::string, std::any>& GetUniformsData() const;
-
-	void FillUniform();
-
-	void Bind();
-	void Unbind();
 
 	void SetDepthTest(bool p_depthTest);
 	void SetBlendable(bool p_blendable);
@@ -57,7 +59,9 @@ public:
 
 	int GetGPUInstances() const;
 
-public:
+	void OnSerialize(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_node) override;
+	void OnDeserialize(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_node) override;
+
 	const std::string path;
 
 private:

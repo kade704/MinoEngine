@@ -11,6 +11,7 @@ class EditorResource
 {
 public:
 	EditorResource();
+	~EditorResource();
 
 	Texture* GetFileIcon(const std::string& p_filename);
 	Texture* GetTexture(const std::string& p_id);

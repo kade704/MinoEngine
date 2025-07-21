@@ -3,31 +3,34 @@
 #include "SceneView.h"
 #include "../EditorAction.h"
 
-#include <Mino/Loader/SceneLoader.h>
-
 Panel::SceneView::SceneView(const std::string& p_title) :
 	AViewControllable(p_title),
 	m_sceneManager(EDITOR_CONTEXT(sceneManager))
 {
+	m_camera.SetClearColor({ 0.098f, 0.098f, 0.098f });
+	m_camera.SetFar(5000.0f);
 }
 
 void Panel::SceneView::Update(float p_deltaTime)
 {
 	AViewControllable::Update(p_deltaTime);
 
-	if (EDITOR_CONTEXT(inputManager)->IsKeyPressed(EKey::KEY_W))
+	if (IsFocused() && !m_cameraController.IsRightMousePressed())
 	{
-		m_currentOperation = EGizmoOperation::TRANSLATE;
-	}
+		if (EDITOR_CONTEXT(inputManager)->IsKeyPressed(EKey::KEY_W))
+		{
+			m_currentOperation = EGizmoOperation::TRANSLATE;
+		}
 
-	if (EDITOR_CONTEXT(inputManager)->IsKeyPressed(EKey::KEY_E))
-	{
-		m_currentOperation = EGizmoOperation::ROTATE;
-	}
+		if (EDITOR_CONTEXT(inputManager)->IsKeyPressed(EKey::KEY_E))
+		{
+			m_currentOperation = EGizmoOperation::ROTATE;
+		}
 
-	if (EDITOR_CONTEXT(inputManager)->IsKeyPressed(EKey::KEY_R))
-	{
-		m_currentOperation = EGizmoOperation::SCALE;
+		if (EDITOR_CONTEXT(inputManager)->IsKeyPressed(EKey::KEY_R))
+		{
+			m_currentOperation = EGizmoOperation::SCALE;
+		}
 	}
 }
 
@@ -35,8 +38,14 @@ void Panel::SceneView::_Render_Impl()
 {
 	PrepareCamera();
 
+	auto& baseRenderer = *EDITOR_CONTEXT(renderer).get();
+
+	uint8_t glState = baseRenderer.FetchGLState();
+	baseRenderer.ApplyStateMask(glState);
 	HandleActorPicking();
-	RenderScene(0);
+	baseRenderer.ApplyStateMask(glState);
+	RenderScene(glState);
+	baseRenderer.ApplyStateMask(glState);
 }
 
 void Panel::SceneView::RenderScene(uint8_t p_defaultRenderState)
@@ -52,7 +61,10 @@ void Panel::SceneView::RenderScene(uint8_t p_defaultRenderState)
 	baseRenderer.Clear(m_camera);
 	baseRenderer.SetStencilMask(0x00);
 
-	baseRenderer.RenderScene(currentScene, m_camera, m_cameraPosition);
+	m_editorRenderer.RenderGrid(m_cameraPosition, FVector3{ 0.176f, 0.176f, 0.176f });
+	m_editorRenderer.RenderCameras();
+
+	m_editorRenderer.RenderScene(m_cameraPosition, m_camera);
 
 	m_editorRenderer.RenderLights();
 
@@ -60,9 +72,8 @@ void Panel::SceneView::RenderScene(uint8_t p_defaultRenderState)
 	{
 		auto& selectedActor = EDITOR_EXEC(GetSelectedActor());
 
-		m_editorRenderer.RenderActorOutlinePass(selectedActor, true);
 		baseRenderer.ApplyStateMask(p_defaultRenderState);
-		m_editorRenderer.RenderActorOutlinePass(selectedActor, false);
+		m_editorRenderer.RenderActorOutlinePass(selectedActor, true);
 
 		baseRenderer.ApplyStateMask(p_defaultRenderState);
 		baseRenderer.Clear(false, true, false);
@@ -79,7 +90,6 @@ void Panel::SceneView::RenderScene(uint8_t p_defaultRenderState)
 
 	if (m_highlightedActor.has_value())
 	{
-		m_editorRenderer.RenderActorOutlinePass(m_highlightedActor.value().get(), true);
 		baseRenderer.ApplyStateMask(p_defaultRenderState);
 		m_editorRenderer.RenderActorOutlinePass(m_highlightedActor.value().get(), false);
 	}
@@ -87,11 +97,34 @@ void Panel::SceneView::RenderScene(uint8_t p_defaultRenderState)
 	m_fbo.Unbind();
 }
 
+void Panel::SceneView::RenderSceneForActorPicking()
+{
+	auto& baseRenderer = *EDITOR_CONTEXT(renderer).get();
+
+	auto [winWidth, winHeight] = GetSafeSize();
+
+	m_actorPickingFramebuffer.Resize(winWidth, winHeight);
+	m_actorPickingFramebuffer.Bind();
+	baseRenderer.SetClearColor(1.0f, 1.0f, 1.0f);
+	baseRenderer.Clear();
+	m_editorRenderer.RenderSceneForActorPicking();
+
+	if (EDITOR_EXEC(IsAnyActorSelected()))
+	{
+		auto& selectedActor = EDITOR_EXEC(GetSelectedActor());
+		baseRenderer.Clear(false, true, false);
+		m_editorRenderer.RenderGizmo(selectedActor.transform.GetWorldPosition(), selectedActor.transform.GetWorldRotation(), m_currentOperation, true);
+	}
+
+	m_actorPickingFramebuffer.Unbind();
+}
+
+
 void Panel::SceneView::HandleActorPicking()
 {
 	auto& inputManager = *EDITOR_CONTEXT(inputManager);
 
-	if (inputManager.GetMouseButtonState(EMouseButton::MOUSE_BUTTON_LEFT) == EMouseButtonState::MOUSE_DOWN)
+	if (inputManager.IsMouseButtonReleased(EMouseButton::MOUSE_BUTTON_LEFT))
 	{
 		m_gizmoBehaviour.StopPicking();
 	}
@@ -117,17 +150,19 @@ void Panel::SceneView::HandleActorPicking()
 		m_highlightedActor = {};
 		m_highlightedGizmoDirection = {};
 
-		if (direction.has_value())
+		if (!m_cameraController.IsRightMousePressed())
 		{
-			m_highlightedGizmoDirection = direction;
-
+			if (direction.has_value())
+			{
+				m_highlightedGizmoDirection = direction;
+			}
+			else if (actorUnderMouse != nullptr)
+			{
+				m_highlightedActor = std::ref(*actorUnderMouse);
+			}
 		}
-		else if (actorUnderMouse != nullptr)
-		{
-			m_highlightedActor = std::ref(*actorUnderMouse);
-		}
 
-		if (inputManager.GetMouseButtonState(EMouseButton::MOUSE_BUTTON_LEFT) == EMouseButtonState::MOUSE_DOWN)
+		if (inputManager.IsMouseButtonPressed(EMouseButton::MOUSE_BUTTON_LEFT) && !m_cameraController.IsRightMousePressed())
 		{
 			if (direction.has_value())
 			{
@@ -158,25 +193,3 @@ void Panel::SceneView::HandleActorPicking()
 	}
 }
 
-void Panel::SceneView::RenderSceneForActorPicking()
-{
-	auto& baseRenderer = *EDITOR_CONTEXT(renderer).get();
-
-	auto [winWidth, winHeight] = GetSafeSize();
-
-	m_actorPickingFramebuffer.Resize(winWidth, winHeight);
-	m_actorPickingFramebuffer.Bind();
-
-	baseRenderer.SetClearColor(1.0f, 1.0f, 1.0f);
-	baseRenderer.Clear();
-	m_editorRenderer.RenderSceneForActorPicking();
-
-	if (EDITOR_EXEC(IsAnyActorSelected()))
-	{
-		auto& selectedActor = EDITOR_EXEC(GetSelectedActor());
-		baseRenderer.Clear(false, true, false);
-		m_editorRenderer.RenderGizmo(selectedActor.transform.GetWorldPosition(), selectedActor.transform.GetWorldRotation(), m_currentOperation, true);
-	}
-
-	m_actorPickingFramebuffer.Unbind();
-}
