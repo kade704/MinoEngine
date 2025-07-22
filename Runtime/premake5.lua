@@ -16,6 +16,7 @@ project "Runtime"
         "%{IncludeDir.lua}",
         "%{IncludeDir.sol2}",
         "%{IncludeDir.imgui}",
+        "%{IncludeDir.tinyxml2}",
     }
     
     links {

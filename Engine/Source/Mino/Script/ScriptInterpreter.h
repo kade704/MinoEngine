@@ -2,7 +2,7 @@
 
 #include <sol/sol.hpp>
 
-#include "Component/Behaviour.h"
+#include "../Component/Behaviour.h"
 
 class ScriptInterpreter
 {

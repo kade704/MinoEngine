@@ -1,10 +1,10 @@
 #include "LuaMathBinder.h"
-#include "Math/FVector2.h"
-#include "Math/FVector3.h"
-#include "Math/FVector4.h"
-#include "Math/FMatrix3.h"
-#include "Math/FMatrix4.h"
-#include "Math/FQuaternion.h"
+#include "../Math/FVector2.h"
+#include "../Math/FVector3.h"
+#include "../Math/FVector4.h"
+#include "../Math/FMatrix3.h"
+#include "../Math/FMatrix4.h"
+#include "../Math/FQuaternion.h"
 
 void LuaMathBinder::BindMath(sol::state& p_luaState)
 {

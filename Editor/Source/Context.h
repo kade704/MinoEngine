@@ -11,7 +11,7 @@
 #include <Mino/Renderer.h>
 #include <Mino/UIManager.h>
 #include <Mino/Profiler.h>
-#include <Mino/ScriptInterpreter.h>
+#include <Mino/Script/ScriptInterpreter.h>
 #include <Mino/ShapeDrawer.h>
 #include <Mino/Buffer/UniformBuffer.h>
 #include <Mino/Buffer/ShaderStorageBuffer.h>

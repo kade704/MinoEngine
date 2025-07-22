@@ -1,8 +1,8 @@
 #include "LuaGlobalBinder.h"
-#include "Logger.h"
-#include "InputManager.h"
-#include "ServiceLocator.h"
-#include "Math/FVector2.h"
+#include "../Logger.h"
+#include "../InputManager.h"
+#include "../ServiceLocator.h"
+#include "../Math/FVector2.h"
 
 void LuaGlobalBinder::BindGlobal(sol::state& p_luaState)
 {
