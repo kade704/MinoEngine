@@ -2,11 +2,10 @@
 
 #include "Renderer.h"
 #include "Component/CMaterialRenderer.h"
-#include "Loader/TextureLoader.h"
 #include "Setting/ETextureFilteringMode.h"
 
 Renderer::Renderer() :
-	m_emptyTexture(TextureLoader::CreateColor
+	m_emptyTexture(Texture::CreateColor
 	(
 		(255 << 24) | (255 << 16) | (255 << 8) | 255,
 		ETextureFilteringMode::NEAREST,

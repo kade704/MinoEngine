@@ -2,7 +2,7 @@
 
 Material* MaterialManager::CreateResource(const std::string& p_path)
 {
-	auto material = MaterialLoader::Create(p_path);
+	auto material = Material::Create(p_path);
 	if (material)
 	{
 		*reinterpret_cast<std::string*>(reinterpret_cast<char*>(material) + offsetof(Material, path)) = p_path;
@@ -12,5 +12,5 @@ Material* MaterialManager::CreateResource(const std::string& p_path)
 
 void MaterialManager::DestroyResource(Material* p_resource)
 {
-	MaterialLoader::Destroy(p_resource);
+	Material::Destroy(p_resource);
 }

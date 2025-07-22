@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Loader/ShaderLoader.h"
+#include "../Resource/Shader.h"
 #include "AResourceManager.h"
 
 class ShaderManager : public AResourceManager<Shader>

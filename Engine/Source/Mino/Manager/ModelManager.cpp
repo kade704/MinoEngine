@@ -2,7 +2,7 @@
 
 Model* ModelManager::CreateResource(const std::string& p_path)
 {
-	auto model = ModelLoader::Create(p_path, 
+	auto model = Model::Create(p_path, 
 		EModelParserFlags::TRIANGULATE | 
 		EModelParserFlags::CALC_TANGENT_SPACE | 
 		EModelParserFlags::GEN_SMOOTH_NORMALS | 
@@ -12,5 +12,5 @@ Model* ModelManager::CreateResource(const std::string& p_path)
 
 void ModelManager::DestroyResource(Model* p_resource)
 {
-	ModelLoader::Destroy(p_resource);
+	Model::Destroy(p_resource);
 }

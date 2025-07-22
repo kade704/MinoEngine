@@ -11,7 +11,9 @@
 
 class Material : public Serializable
 {
-	friend class MaterialLoader;
+public:
+	static Material* Create(const std::string& path);
+	static bool Destroy(Material*& p_material);
 
 public:
 	void SetShader(Shader* shader);

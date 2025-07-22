@@ -20,7 +20,8 @@ public:
 		std::vector<Component::CLight*> lights;
 	};
 
-public:
+	static Scene* Create(const std::string& p_path);
+
 	Scene();
 	~Scene();
 

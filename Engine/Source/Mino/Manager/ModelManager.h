@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Loader/ModelLoader.h"
+#include "../Resource/Model.h"
 #include "AResourceManager.h"
 
 class ModelManager : public AResourceManager<Model>

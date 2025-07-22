@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Loader/MaterialLoader.h"
+#include "../Resource/Material.h"
 #include "AResourceManager.h"
 
 class MaterialManager : public AResourceManager<Material>

@@ -1,5 +1,4 @@
 #include "ShapeDrawer.h"
-#include "Loader/ShaderLoader.h"
 
 ShapeDrawer::ShapeDrawer(Renderer &p_renderer) : m_renderer(p_renderer)
 {
@@ -51,7 +50,7 @@ void main()
 }
 )";
 
-    m_lineShader = ShaderLoader::CreateFromSource(vertexShader, fragmentShader);
+    m_lineShader = Shader::CreateFromSource(vertexShader, fragmentShader);
 }
 
 ShapeDrawer::~ShapeDrawer()
