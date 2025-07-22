@@ -224,7 +224,7 @@ void Actor::OnSerialize(tinyxml2::XMLDocument& doc, tinyxml2::XMLNode* node)
         auto componentNode = doc.NewElement("component");
         componentsNode->InsertEndChild(componentNode);
 
-        Serializer::SerializeString(doc, componentNode, "type", typeid(*component).name());
+        Serializer::SerializeString(doc, componentNode, "type", component->GetName());
 
         auto data = doc.NewElement("data");
         componentNode->InsertEndChild(data);

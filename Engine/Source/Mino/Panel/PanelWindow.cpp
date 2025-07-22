@@ -7,6 +7,11 @@ Panel::PanelWindow::PanelWindow(const std::string& p_name) :
 {
 }
 
+void Panel::PanelWindow::Focus()
+{
+	ImGui::SetWindowFocus((name + m_panelID).c_str());
+}
+
 bool Panel::PanelWindow::IsHovered() const
 {
 	return m_hovered;

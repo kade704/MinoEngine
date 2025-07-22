@@ -25,11 +25,50 @@ Panel::Toolbar::Toolbar(const std::string& p_title) :
 	m_stopButton->ClickedEvent += EDITOR_BIND(StopPlaying);
 	m_nextButton->ClickedEvent += EDITOR_BIND(NextFrame);
 	refreshButton.ClickedEvent += EDITOR_BIND(RefreshScripts);
+
+	EDITOR_EVENT(EditorModeChangedEvent) += [this](EditorAction::EEditorMode p_newMode)
+	{
+		auto enable = [](Widget::ButtonImage* p_button, bool p_enable)
+			{
+				p_button->disabled = !p_enable;
+				p_button->tint = p_enable ?  Color{ 1.0f, 1.0f, 1.0f, 1.0f } : Color{ 1.0f, 1.0f, 1.0f, 0.15f };
+			};
+
+		switch (p_newMode)
+		{
+		case EditorAction::EEditorMode::EDIT:
+			enable(m_playButton, true);
+			enable(m_pauseButton, false);
+			enable(m_stopButton, false);
+			enable(m_nextButton, false);
+			break;
+		case EditorAction::EEditorMode::PLAY:
+			enable(m_playButton, false);
+			enable(m_pauseButton, true);
+			enable(m_stopButton, true);
+			enable(m_nextButton, true);
+			break;
+		case EditorAction::EEditorMode::PAUSE:
+			enable(m_playButton, true);
+			enable(m_pauseButton, false);
+			enable(m_stopButton, true);
+			enable(m_nextButton, true);
+			break;
+		case EditorAction::EEditorMode::FRAME_BY_FRAME:
+			enable(m_playButton, true);
+			enable(m_pauseButton, false);
+			enable(m_stopButton, true);
+			enable(m_nextButton, true);
+			break;
+		}
+	};
+
+	EDITOR_EXEC(SetEditorMode(EditorAction::EEditorMode::EDIT));
 }
 
 void Panel::Toolbar::_Draw_Impl()
 {
-	//ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10, 10));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10, 10));
 	PanelWindow::_Draw_Impl();
-	//ImGui::PopStyleVar();
+	ImGui::PopStyleVar();
 }

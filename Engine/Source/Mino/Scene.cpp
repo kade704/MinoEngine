@@ -138,35 +138,45 @@ Scene::FastAccessComponents Scene::GetFastAccessComponents() const
     return m_fastAccessComponents;
 }
 
-void Scene::OnSerialize(tinyxml2::XMLDocument& doc, tinyxml2::XMLNode* node)
+void Scene::OnSerialize(tinyxml2::XMLDocument& p_doc, tinyxml2::XMLNode* p_root)
 {
-    auto actorsNode = doc.NewElement("actors");
-    node->InsertEndChild(actorsNode);
+    tinyxml2::XMLNode* sceneNode = p_doc.NewElement("scene");
+    p_root->InsertEndChild(sceneNode);
+
+    tinyxml2::XMLNode* actorsNode = p_doc.NewElement("actors");
+    p_root->InsertEndChild(actorsNode);
 
     for (auto& actor : m_actors)
     {
-        actor->OnSerialize(doc, actorsNode);
+        actor->OnSerialize(p_doc, actorsNode);
     }
 }
 
 void Scene::OnDeserialize(tinyxml2::XMLDocument& doc, tinyxml2::XMLNode* node)
 {
-    auto actorsRoot = node->FirstChildElement("actors");
+    tinyxml2::XMLNode* actorsRoot = node->FirstChildElement("actors");
     if (actorsRoot)
     {
-        auto currentActor = actorsRoot->FirstChildElement("actor");
+        tinyxml2::XMLElement* currentActor = actorsRoot->FirstChildElement("actor");
+        int64_t maxID = 1;
 
         while (currentActor)
         {
             auto& actor = CreateActor();
             actor.OnDeserialize(doc, currentActor);
+            maxID = std::max(actor.GetID() + 1, maxID);
             currentActor = currentActor->NextSiblingElement("actor");
         }
 
+        m_availableID = maxID;
+
         for (auto actor : m_actors)
         {
-            if (auto found = FindActorByID(actor->GetParentID()); found)
-                actor->SetParent(*found);
+            if (actor->GetParentID() > 0)
+            {
+                if (auto found = FindActorByID(actor->GetParentID()); found)
+                    actor->SetParent(*found);
+            }
         }
     }
 }

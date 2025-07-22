@@ -7,6 +7,7 @@
 #include "../Converter.h"
 
 #include <imgui.h>
+#include <imgui_internal.h>
 
 namespace Widget
 {
@@ -26,11 +27,27 @@ namespace Widget
 			ImVec4 bg = Converter::ToImVec4(background);
 			ImVec4 tn = Converter::ToImVec4(tint);
 
-			if (ImGui::ImageButton(("##img_btn_" + id).c_str(), (ImTextureID)textureID.raw, Converter::ToImVec2(size), ImVec2(0.f, 1.f), ImVec2(1.f, 0.f), bg, tn))
+			const bool isDisabled = disabled;
+
+			if (isDisabled)
+			{
+				ImGui::BeginDisabled();
+			}
+
+			if (ImGui::ImageButtonEx(ImGui::GetID(m_widgetID.c_str()), (ImTextureID)textureID.raw, Converter::ToImVec2(size), ImVec2(0.f, 1.f), ImVec2(1.f, 0.f), bg, tn))
+			{
 				ClickedEvent.Invoke();
+			}
+
+			if (isDisabled)
+			{
+				ImGui::EndDisabled();
+			}
 		}
 
 	public:
+		bool disabled = false;
+
 		Color background = { 0, 0, 0, 0 };
 		Color tint = { 1, 1, 1, 1 };
 

@@ -12,6 +12,8 @@ namespace Panel
 	public:
 		PanelWindow(const std::string& p_name = "");
 
+		void Focus();
+
 		bool IsHovered() const;
 		bool IsFocused() const;
 

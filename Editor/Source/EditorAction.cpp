@@ -2,6 +2,8 @@
 
 #include "EditorAction.h"
 #include "Panel/Inspector.h"
+#include "Panel/GameView.h"
+#include "Panel/SceneView.h"
 #include <Mino/Logger.h>
 #include <Mino/SaveFileDialog.h>
 
@@ -76,6 +78,7 @@ EditorAction::EEditorMode EditorAction::GetCurrentEditorMode() const
 void EditorAction::SetEditorMode(EEditorMode p_newEditorMode)
 {
     m_editorMode = p_newEditorMode;
+    EditorModeChangedEvent.Invoke(m_editorMode);
 }
 
 void EditorAction::StartPlaying()
@@ -83,11 +86,16 @@ void EditorAction::StartPlaying()
     if (m_editorMode == EEditorMode::EDIT)
     {
         m_context.scriptInterpreter->RefreshAll();
-
         EDITOR_PANEL(Panel::Inspector, "Inspector").Refresh();
 
         if (m_context.scriptInterpreter->IsOk())
         {
+            PlayEvent.Invoke();
+            m_sceneBackup.Clear();
+            tinyxml2::XMLNode* node = m_sceneBackup.NewElement("root");
+            m_sceneBackup.InsertFirstChild(node);
+            m_context.sceneManager.GetCurrentScene()->OnSerialize(m_sceneBackup, node);
+            m_panelManager.GetPanelAs<Panel::GameView>("Game View").Focus();
             m_context.sceneManager.GetCurrentScene()->Play();
             SetEditorMode(EEditorMode::PLAY);
         }
@@ -108,6 +116,18 @@ void EditorAction::StopPlaying()
     if (m_editorMode != EEditorMode::EDIT)
     {
         SetEditorMode(EEditorMode::EDIT);
+
+        int64_t focusedActorID = -1;
+
+        if (auto targetActor = EDITOR_PANEL(Panel::Inspector, "Inspector").GetTargetActor())
+            focusedActorID = targetActor->GetID();
+
+        m_context.sceneManager.LoadSceneFromMemory(m_sceneBackup);
+
+        m_sceneBackup.Clear();
+        EDITOR_PANEL(Panel::SceneView, "Scene View").Focus();
+        if (auto actorInstance = m_context.sceneManager.GetCurrentScene()->FindActorByID(focusedActorID))
+            EDITOR_PANEL(Panel::Inspector, "Inspector").FocusActor(*actorInstance);
     }
 }
 

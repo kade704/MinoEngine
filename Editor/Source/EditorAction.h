@@ -52,15 +52,18 @@ public:
 
 	bool IsCurrentSceneLoadedFromDisk() const;
 
+public:
+	Event<Actor&> ActorSelectedEvent;
+	Event<Actor&> ActorUnselectedEvent;
+	Event<EEditorMode> EditorModeChangedEvent;
+	Event<> PlayEvent;
+
 private:
 	Context& m_context;
 	PanelManager& m_panelManager;
 	EditorRenderer& m_renderer;
 	EEditorMode m_editorMode = EEditorMode::EDIT;
 	std::vector<std::pair<uint32_t, std::function<void()>>> m_delayedActions;
-
-public:
-	Event<Actor&> ActorSelectedEvent;
-	Event<Actor&> ActorUnselectedEvent;
+	tinyxml2::XMLDocument m_sceneBackup;
 };
 
