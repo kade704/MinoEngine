@@ -1,0 +1,9 @@
+<root>
+    <shader>Resource/Shader/standard.shader</shader>
+    <uniforms>
+        <uniform>
+            <name>u_DiffuseMap</name>
+            <value>Contents/Model/Gradient Texture Atlas.png</value>
+        </uniform>
+    </uniforms>
+</root>

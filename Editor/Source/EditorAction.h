@@ -28,8 +28,9 @@ public:
 	void UnselectActor();
 	bool IsAnyActorSelected() const;
 	Actor& GetSelectedActor() const;
-	Actor& CreateActor(Actor* p_parent, const std::string& p_name);
+	Actor& CreateActor(Actor* p_parent = nullptr, const std::string& p_name = "New Actor");
 	bool DestroyActor(Actor& p_actor);
+	void DuplicateActor(Actor& p_toDuplicate, Actor* p_forcedParent = nullptr);
 
 	EEditorMode GetCurrentEditorMode() const;
 	void SetEditorMode(EEditorMode p_newEditorMode);

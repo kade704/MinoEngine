@@ -57,6 +57,7 @@ void Editor::Update(float p_deltaTime)
 	UpdateEditorPanels(p_deltaTime);
 	RenderViews(p_deltaTime);
 	RenderEditorUI(p_deltaTime);
+	m_editorAction.ExecuteDelayedActions();
 }
 
 void Editor::PostUpdate()

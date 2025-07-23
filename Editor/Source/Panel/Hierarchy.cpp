@@ -23,6 +23,12 @@ public:
 			{
 				EDITOR_EXEC(DestroyActor(std::ref(*m_target)));
 			};
+
+			auto& duplicateButton = CreateWidget<Widget::MenuItem>("Duplicate");
+			duplicateButton.ClickedEvent += [this]
+			{
+				EDITOR_EXEC(DelayAction(EDITOR_BIND(DuplicateActor, std::ref(*m_target), nullptr), 0));
+			};
 		}
 	}
 

@@ -8,6 +8,9 @@
 #include <Mino/ContextualMenu.h>
 #include <Mino/Widget/MenuList.h>
 #include <Mino/Widget/MenuItem.h>
+#include <Mino/Widget/InputText.h>
+
+#include <fstream>
 
 class BrowserItemContextualMenu : public ContextualMenu
 {
@@ -16,7 +19,6 @@ public:
 
 	virtual void CreateList()
 	{
-		//auto& renameMenu = CreateWidget<MenuList>("Rename to...");
 		auto& deleteAction = CreateWidget<Widget::MenuItem>("Delete");
 	}
 
@@ -30,6 +32,83 @@ public:
 
 public:
 	std::string filePath;
+};
+
+class FolderContextualMenu : public BrowserItemContextualMenu
+{
+public:
+	FolderContextualMenu(const std::string& p_filePath) : BrowserItemContextualMenu(p_filePath) {}
+
+	virtual void CreateList() override
+	{
+		auto& createMenu = CreateWidget<Widget::MenuList>("Create");
+
+		auto& createFolderMenu = createMenu.CreateWidget<Widget::MenuList>("Folder");
+		auto& createMaterialMenu = createMenu.CreateWidget<Widget::MenuList>("Material");
+		auto& createFolderInput = createFolderMenu.CreateWidget<Widget::InputText>("");
+		auto& createMaterialInput = createMaterialMenu.CreateWidget<Widget::InputText>("");
+
+		createFolderMenu.ClickedEvent += [&createFolderInput] { createFolderInput.content = ""; };
+		createMaterialMenu.ClickedEvent += [&createMaterialInput] { createMaterialInput.content = ""; };
+
+		createFolderInput.EnterPressedEvent += [this](std::string newFolderName)
+		{
+			size_t fails = 0;
+			std::string finalPath;
+
+			do
+			{
+				finalPath = filePath + "/" + (!fails ? newFolderName : newFolderName + " (" + std::to_string(fails) + ')');
+
+				++fails;
+			} while (std::filesystem::exists(finalPath));
+
+			std::filesystem::create_directory(finalPath);
+
+			ItemAddedEvent.Invoke(finalPath);
+			Close();
+		};
+
+		createMaterialInput.EnterPressedEvent += [this](std::string materialName)
+		{
+			size_t fails = 0;
+			std::string finalPath;
+
+			do
+			{
+				finalPath = filePath + "/" +  (!fails ? materialName : materialName + " (" + std::to_string(fails) + ')') + ".mat";
+
+				++fails;
+			} while (std::filesystem::exists(finalPath));
+
+			{
+				std::ofstream outfile(finalPath);
+				outfile << "<root><shader>Resource/Shader/standard.shader</shader></root>" << std::endl;
+			}
+
+			ItemAddedEvent.Invoke(finalPath);
+
+
+			// if (auto instance = EDITOR_CONTEXT(materialManager)[EDITOR_EXEC(GetResourcePath(finalPath))])
+			// {
+			// 	auto& materialEditor = EDITOR_PANEL(OvEditor::Panels::MaterialEditor, "Material Editor");
+			// 	materialEditor.SetTarget(*instance);
+			// 	materialEditor.Open();
+			// 	materialEditor.Focus();
+			// 	materialEditor.Preview();
+			// }
+			Close();
+		};
+
+		BrowserItemContextualMenu::CreateList();
+	}
+
+	virtual void DeleteItem() override
+	{
+	}
+
+public:
+	Event<std::string> ItemAddedEvent;
 };
 
 class FileContextualMenu : public BrowserItemContextualMenu
@@ -54,7 +133,7 @@ public:
 
 	virtual void CreateList() override
 	{
-		auto& editAction = CreateWidget<Widget::MenuItem>("Edit");
+		auto& editAction = CreateWidget<Widget::MenuItem>("Open Scene");
 
 		editAction.ClickedEvent += [this]
 		{
@@ -121,11 +200,28 @@ void Panel::AssetBrowser::ConsiderItem(Widget::TreeNode* p_root, const std::file
 	if (isDirectory)
 	{
 		auto& treeNode = itemGroup.CreateWidget<Widget::TreeNode>(itemname);
-		treeNode.OpenedEvent += [this, &treeNode, path]
+
+		auto& contextMenu = treeNode.AddPlugin<FolderContextualMenu>(path);
+
+		contextMenu.ItemAddedEvent += [this, &treeNode, path] (std::string p_string)
 		{
+			treeNode.Open();
+			treeNode.RemoveAllWidgets();
+			ParseFolder(treeNode, std::filesystem::directory_entry(PathParser::GetContainingFolder(p_string)));
+		};
+		
+		contextMenu.CreateList();
+
+		treeNode.OpenedEvent += [this, &treeNode, path]
+	{
 			treeNode.RemoveAllWidgets();
 			std::string updatedPath = PathParser::GetContainingFolder(path) + treeNode.name;
 			ParseFolder(treeNode, std::filesystem::directory_entry(updatedPath));
+		};
+
+		treeNode.ClosedEvent += [this, &treeNode]
+		{
+			treeNode.RemoveAllWidgets();
 		};
 	}
 	else

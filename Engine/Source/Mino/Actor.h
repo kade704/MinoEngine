@@ -16,9 +16,10 @@ public:
 	Actor(int64_t id, const std::string& name);
 	virtual ~Actor();
 
-	const std::string& GetName() const;
 	void SetName(const std::string& name);
+	void SetID(int64_t p_id);
 
+	const std::string& GetName() const;
 	int64_t GetID() const;
 	int64_t GetParentID() const;
 

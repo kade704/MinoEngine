@@ -70,6 +70,34 @@ bool EditorAction::DestroyActor(Actor& p_actor)
     return true;
 }
 
+void EditorAction::DuplicateActor(Actor& p_toDuplicate, Actor* p_forcedParent)
+{
+    tinyxml2::XMLDocument doc;
+    tinyxml2::XMLNode* actorsRoot = doc.NewElement("actors");
+    p_toDuplicate.OnSerialize(doc, actorsRoot);
+    auto& newActor = CreateActor();
+    int64_t idToUse = newActor.GetID();
+    tinyxml2::XMLElement* currentActor = actorsRoot->FirstChildElement("actor");
+    newActor.OnDeserialize(doc, currentActor);
+
+    newActor.SetID(idToUse);
+
+    auto currentScene = m_context.sceneManager.GetCurrentScene();
+
+    if (newActor.GetParentID() > 0)
+    {
+        if (auto found = currentScene->FindActorByID(newActor.GetParentID()); found)
+        {
+            newActor.SetParent(*found);
+        }
+    }
+
+    newActor.SetName(p_toDuplicate.GetName());
+    
+    for (auto& child : p_toDuplicate.GetChildren())
+        DuplicateActor(*child, &newActor);
+}
+
 EditorAction::EEditorMode EditorAction::GetCurrentEditorMode() const
 {
     return m_editorMode;
@@ -181,16 +209,11 @@ void EditorAction::SaveSceneChanges()
 void EditorAction::SaveAs()
 {
     SaveFileDialog dialog("New Scene");
-    dialog.DefineExtension("Overload Scene", ".scene");
+    dialog.DefineExtension("Scene", ".scene");
     dialog.Show();
 
     if (dialog.HasSucceeded())
     {
-        if (dialog.IsFileExisting())
-        {
-            return;
-        }
-
         SaveCurrentSceneTo(dialog.GetSelectedFilePath());
         MINO_LOG("Current scene saved to: " + dialog.GetSelectedFilePath());
     }
@@ -204,17 +227,17 @@ void EditorAction::DelayAction(std::function<void()> p_action, uint32_t p_frames
 void EditorAction::ExecuteDelayedActions()
 {
     std::for_each(m_delayedActions.begin(), m_delayedActions.end(), [](std::pair<uint32_t, std::function<void()>>& p_element)
-        {
-            --p_element.first;
+    {
+        --p_element.first;
 
-    if (p_element.first == 0)
-        p_element.second();
-        });
+        if (p_element.first == 0)
+            p_element.second();
+    });
 
     m_delayedActions.erase(std::remove_if(m_delayedActions.begin(), m_delayedActions.end(), [](std::pair<uint32_t, std::function<void()>>& p_element)
-        {
-            return p_element.first == 0;
-        }), m_delayedActions.end());
+    {
+        return p_element.first == 0;
+    }), m_delayedActions.end());
 }
 
 bool EditorAction::IsCurrentSceneLoadedFromDisk() const

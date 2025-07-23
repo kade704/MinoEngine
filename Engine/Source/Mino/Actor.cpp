@@ -52,6 +52,11 @@ void Actor::SetName(const std::string& name)
     m_name = name;
 }
 
+void Actor::SetID(int64_t p_id)
+{
+    m_actorID = p_id;
+}
+
 int64_t Actor::GetID() const
 {
     return m_actorID;
